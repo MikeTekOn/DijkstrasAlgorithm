@@ -12,7 +12,7 @@ public class VertexWrapper {
     private Set<EdgeWrapper> edges;
     private long shortestDistanceFromStart;
     private EdgeWrapper previousEdge;
-    private VertexWrapper previousVertex; // needed?
+    private VertexWrapper previousVertex;
 
     public boolean hasPreviousEdge() {
         return !(null == previousEdge);
