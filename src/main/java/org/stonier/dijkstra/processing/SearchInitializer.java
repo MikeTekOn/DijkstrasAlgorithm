@@ -12,6 +12,7 @@ public class SearchInitializer {
     private static final long INFINITY = Long.MAX_VALUE;
 
     public static SearchState initializeGraph(Graph graph, Vertex startVertex, Vertex finishVertex) {
+
         Map<Vertex, VertexWrapper> wrappedVertices = graph.getVertices().stream()
                 .map(vertex -> wrapVertex(vertex, startVertex))
                 .collect(Collectors.toMap(VertexWrapper::getVertex, vertexWrapper -> vertexWrapper));
@@ -53,6 +54,7 @@ public class SearchInitializer {
     }
 
     private static void wrapVertexEdges(VertexWrapper vertexWrapper, Map<Vertex, VertexWrapper> vertices) {
+
         vertexWrapper.getVertex().getEdges().stream()
                 .map(edge -> wrapEdge(edge, vertices))
                 .forEach(vertexWrapper::addEdge);

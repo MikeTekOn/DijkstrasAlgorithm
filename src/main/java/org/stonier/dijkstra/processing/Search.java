@@ -50,12 +50,14 @@ public class Search {
     }
 
     private static VertexWrapper getUnvisitedVertexWithSmallestDistanceFromStart(SearchState searchState) {
+
         return searchState.getVerticesToVisit().values().stream()
                 .min((vw1, vw2) -> Long.compare(vw1.getShortestDistanceFromStart(), vw2.getShortestDistanceFromStart()))
                 .get();
     }
 
     private static Path calculatePath(VertexWrapper vertexWrapper) {
+
         List<Edge> edgePath = new ArrayList<>();
         while (vertexWrapper.hasPreviousEdge()) {
             edgePath.add(vertexWrapper.getPreviousEdge().getEdge());
