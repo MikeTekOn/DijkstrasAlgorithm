@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 public class Search {
     private static final long INFINITY = Long.MAX_VALUE;
 
-    public Path getShortestPath(Graph graph, Vertex startVertex, Vertex finishVertex) {
+    public static Path getShortestPath(Graph graph, Vertex startVertex, Vertex finishVertex) {
 
-        GraphState graphState = initializeGraph(graph, startVertex, finishVertex);
+        SearchState searchState = initializeGraph(graph, startVertex, finishVertex);
 
-        while (graphState.hasVerticesToVisit()) {
-            Optional<VertexWrapper> finishedVertex = visitNextVertexForFinish(graphState);
+        while (searchState.hasVerticesToVisit()) {
+            Optional<VertexWrapper> finishedVertex = visitNextVertexForFinish(searchState);
 
             if (finishedVertex.isPresent()) {
                 return calculatePath(finishedVertex.get());
@@ -26,33 +26,35 @@ public class Search {
         throw new IllegalArgumentException("Unable to find path from Start Vertex to Finish Vertex");
     }
 
-    private GraphState initializeGraph(Graph graph, Vertex startVertex, Vertex finishVertex) {
-        Set<VertexWrapper> wrappedVertices = graph.getVertices().stream()
+    private static SearchState initializeGraph(Graph graph, Vertex startVertex, Vertex finishVertex) {
+        Map<Vertex, VertexWrapper> wrappedVertices = graph.getVertices().stream()
                 .map(vertex -> wrapVertex(vertex, startVertex))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toMap(VertexWrapper::getVertex, vertexWrapper -> vertexWrapper));
 
-        Optional<VertexWrapper> wrappedStartVertex = wrappedVertices.stream()
+        Optional<VertexWrapper> wrappedStartVertex = wrappedVertices.values().stream()
                 .filter(vertexWrapper -> vertexWrapper.getVertex().equals(startVertex))
                 .findFirst();
         if (!wrappedStartVertex.isPresent()) {
             throw new IllegalArgumentException("Start Vertex not equal to any Vertex in the Graph");
         }
 
-        Optional<VertexWrapper> wrappedFinishVertex = wrappedVertices.stream()
+        Optional<VertexWrapper> wrappedFinishVertex = wrappedVertices.values().stream()
                 .filter(vertexWrapper -> vertexWrapper.getVertex().equals(finishVertex))
                 .findFirst();
         if (!wrappedFinishVertex.isPresent()) {
             throw new IllegalArgumentException("Finish Vertex not equal to any Vertex in the Graph");
         }
 
-        return GraphState.builder()
+        wrappedVertices.values().forEach(vertex -> wrapVertexEdges(vertex, wrappedVertices));
+
+        return SearchState.builder()
                 .verticesToVisit(wrappedVertices)
                 .startVertex(wrappedStartVertex.get())
                 .finishVertex(wrappedFinishVertex.get())
                 .build();
     }
 
-    private VertexWrapper wrapVertex(Vertex vertex, Vertex startVertex) {
+    private static VertexWrapper wrapVertex(Vertex vertex, Vertex startVertex) {
 
         long shortestDistanceFromStart = INFINITY;
         if (vertex.equals(startVertex)) {
@@ -65,45 +67,57 @@ public class Search {
                 .build();
     }
 
-    private Optional<VertexWrapper> visitNextVertexForFinish(GraphState graphState) {
+    private static void wrapVertexEdges(VertexWrapper vertexWrapper, Map<Vertex, VertexWrapper> vertices) {
+        vertexWrapper.getVertex().getEdges().stream()
+                .map(edge -> wrapEdge(edge, vertices))
+                .forEach(vertexWrapper::addEdge);
+    }
 
-        VertexWrapper nextVertexToVisit = getUnvisitedVertexWithSmallestDistanceFromStart(graphState);
+    private static EdgeWrapper wrapEdge(Edge edge, Map<Vertex, VertexWrapper> vertices) {
 
-        if (nextVertexToVisit.equals(graphState.getFinishVertex())) {
-            return Optional.of(nextVertexToVisit);
+        return EdgeWrapper.builder()
+                .edge(edge)
+                .connectedVertexWrapper(vertices.get(edge.getConnectedVertex()))
+                .build();
+    }
+
+    private static Optional<VertexWrapper> visitNextVertexForFinish(SearchState searchState) {
+
+        VertexWrapper vertexToVisit = getUnvisitedVertexWithSmallestDistanceFromStart(searchState);
+
+        if (vertexToVisit.equals(searchState.getFinishVertex())) {
+            return Optional.of(vertexToVisit);
         }
 
-        graphState.getVerticesToVisit().remove(nextVertexToVisit);
+        searchState.getVerticesToVisit().remove(vertexToVisit.getVertex());
 
-        for (EdgeWrapper edgeWrapper : nextVertexToVisit.getEdgeWrappers()) {
-            long distanceFromStart = nextVertexToVisit.getShortestDistanceFromStart() + edgeWrapper.getEdge().getWeight();
+        for (EdgeWrapper edgeWrapper : vertexToVisit.getEdges()) {
+            long distanceFromStart = vertexToVisit.getShortestDistanceFromStart() + edgeWrapper.getEdge().getWeight();
             if (distanceFromStart < edgeWrapper.getConnectedVertexWrapper().getShortestDistanceFromStart()) {
-                VertexWrapper updatedVertex = edgeWrapper.getConnectedVertexWrapper()
-                        .withShortestDistanceFromStart(distanceFromStart)
-                        .withPreviousEdgeWrapper(edgeWrapper)
-                        .withPreviousVertexWrapper(nextVertexToVisit);
-                graphState.getVerticesToVisit().add(updatedVertex);
-            }
+                edgeWrapper.getConnectedVertexWrapper().setShortestDistanceFromStart(distanceFromStart);
+                edgeWrapper.getConnectedVertexWrapper().setPreviousEdge(edgeWrapper);
+                edgeWrapper.getConnectedVertexWrapper().setPreviousVertex(vertexToVisit);
+           }
 
         }
         return Optional.empty();
     }
 
-    private VertexWrapper getUnvisitedVertexWithSmallestDistanceFromStart(GraphState graphState) {
-        return graphState.getVerticesToVisit().stream()
+    private static VertexWrapper getUnvisitedVertexWithSmallestDistanceFromStart(SearchState searchState) {
+        return searchState.getVerticesToVisit().values().stream()
                 .min((vw1, vw2) -> Long.compare(vw1.getShortestDistanceFromStart(), vw2.getShortestDistanceFromStart()))
                 .get();
     }
 
-    private Path calculatePath(VertexWrapper vertexWrapper) {
-        List<Edge> path = new ArrayList<>();
-        while (vertexWrapper.hasPreviousEdgeWrapper()) {
-            path.add(vertexWrapper.getPreviousEdgeWrapper().getEdge());
-            vertexWrapper = vertexWrapper.getPreviousVertexWrapper();
+    private static Path calculatePath(VertexWrapper vertexWrapper) {
+        List<Edge> edgePath = new ArrayList<>();
+        while (vertexWrapper.hasPreviousEdge()) {
+            edgePath.add(vertexWrapper.getPreviousEdge().getEdge());
+            vertexWrapper = vertexWrapper.getPreviousVertex();
         }
 
-        Collections.reverse(path);
+        Collections.reverse(edgePath);
 
-        return Path.builder().edges(path).build();
+        return Path.builder().edges(edgePath).build();
     }
 }

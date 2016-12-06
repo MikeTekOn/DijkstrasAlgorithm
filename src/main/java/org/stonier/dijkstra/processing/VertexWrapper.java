@@ -1,25 +1,27 @@
 package org.stonier.dijkstra.processing;
 
 import lombok.Builder;
-import lombok.Value;
-import lombok.experimental.Wither;
 import org.stonier.dijkstra.model.Vertex;
 
+import java.util.HashSet;
 import java.util.Set;
 
-@Value
 @Builder
-@Wither
 public class VertexWrapper {
-    Vertex vertex;
-    Set<EdgeWrapper> edgeWrappers;
-    boolean visited;
-    long shortestDistanceFromStart;
-    EdgeWrapper previousEdgeWrapper;
-    VertexWrapper previousVertexWrapper; // needed?
+    private Vertex vertex;
+    private Set<EdgeWrapper> edges;
+    private long shortestDistanceFromStart;
+    private EdgeWrapper previousEdge;
+    private VertexWrapper previousVertex; // needed?
 
-    public boolean hasPreviousEdgeWrapper() {
-        return !(null == previousEdgeWrapper);
+    public boolean hasPreviousEdge() {
+        return !(null == previousEdge);
+    }
+
+    public void addEdge(EdgeWrapper edge) {
+        if (edges == null)
+            edges = new HashSet<>();
+        edges.add(edge);
     }
 
     @Override
@@ -33,6 +35,46 @@ public class VertexWrapper {
             return false;
         if (obj == this)
             return true;
-        return vertex.equals(((VertexWrapper) obj).getVertex());
+        return vertex.equals(((VertexWrapper) obj).vertex);
+    }
+
+    @Override
+    public String toString() {
+        return "vertex: " + vertex
+                + ", shortestDistanceFromStart: " + shortestDistanceFromStart
+                + ", previousEdge: " + previousEdge.edge
+                + ", previousVertex: " + previousVertex.vertex;
+    }
+
+    public Vertex getVertex() {
+        return vertex;
+    }
+
+    public Set<EdgeWrapper> getEdges() {
+        return edges;
+    }
+
+    public long getShortestDistanceFromStart() {
+        return shortestDistanceFromStart;
+    }
+
+    public void setShortestDistanceFromStart(long shortestDistanceFromStart) {
+        this.shortestDistanceFromStart = shortestDistanceFromStart;
+    }
+
+    public EdgeWrapper getPreviousEdge() {
+        return previousEdge;
+    }
+
+    public void setPreviousEdge(EdgeWrapper previousEdge) {
+        this.previousEdge = previousEdge;
+    }
+
+    public VertexWrapper getPreviousVertex() {
+        return previousVertex;
+    }
+
+    public void setPreviousVertex(VertexWrapper previousVertex) {
+        this.previousVertex = previousVertex;
     }
 }
