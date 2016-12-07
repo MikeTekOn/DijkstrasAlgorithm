@@ -1,4 +1,7 @@
-package org.stonier.dijkstra.model;
+package org.stonier.dijkstra.processing;
+
+import org.stonier.dijkstra.model.Edge;
+import org.stonier.dijkstra.model.Vertex;
 
 import java.util.Set;
 
