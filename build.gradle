@@ -7,6 +7,8 @@
  * user guide available at https://docs.gradle.org/3.2.1/userguide/tutorial_java_projects.html
  */
 
+version = 0.1
+
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
 
@@ -28,4 +30,12 @@ dependencies {
     // testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
     // 'test.useTestNG()' to your build script.
     testCompile 'junit:junit:4.12'
+}
+
+jar.baseName = 'stonier-dijkstra'
+jar {
+    manifest {
+        attributes("Implementaiton-Title": "stonier-dijkstra",
+        'Implementation-Version': version)
+    }
 }
