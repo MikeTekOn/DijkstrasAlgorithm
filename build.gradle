@@ -11,6 +11,7 @@ version = 0.1
 
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
+apply plugin: 'jacoco'
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -32,10 +33,15 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
 jar.baseName = 'stonier-dijkstra'
 jar {
     manifest {
-        attributes("Implementaiton-Title": "stonier-dijkstra",
+        attributes("Implementation-Title": "stonier-dijkstra",
         'Implementation-Version': version)
     }
 }
