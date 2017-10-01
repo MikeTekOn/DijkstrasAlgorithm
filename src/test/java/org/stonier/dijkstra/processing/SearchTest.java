@@ -1,7 +1,9 @@
 package org.stonier.dijkstra.processing;
 
 import org.junit.Test;
-import org.stonier.dijkstra.model.*;
+import org.stonier.dijkstra.model.Graph;
+import org.stonier.dijkstra.model.Path;
+import org.stonier.dijkstra.model.Vertex;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -62,7 +64,7 @@ public class SearchTest {
 
         EdgeImp edgeDtoE = new EdgeImp();
         edgeDtoE.setEdgeId("DtoE");
-        edgeDtoE.setWeight(5);
+        edgeDtoE.setWeight(4);
         edgeDtoE.setConnectedVertex(vertexE);
         vertexDEdges.add(edgeDtoE);
 
@@ -87,6 +89,14 @@ public class SearchTest {
 
         Graph graph = Graph.builder().vertices(vertices).build();
 
+        //       A
+        //      2 3
+        //     B 2 C
+        //        / 4
+        //       7   D
+        //        \ 4
+        //         E
+
         Path shortestPath = Search.getShortestPath(graph, vertexA, vertexE);
 
         ArrayList<EdgeImp> expectedShortestPath = new ArrayList<>();
@@ -95,7 +105,29 @@ public class SearchTest {
 
         assertEquals(expectedShortestPath, shortestPath.getEdges());
 
-        System.out.println("Shortest Path:");
+        System.out.println("Shortest Path when C to E = 7:");
+        shortestPath.getEdges().forEach(System.out::println);
+
+        edgeCtoE.setWeight(9);
+
+        //       A
+        //      2 3
+        //     B 2 C
+        //        / 4
+        //       9   D
+        //        \ 4
+        //         E
+
+        shortestPath = Search.getShortestPath(graph, vertexA, vertexE);
+
+        expectedShortestPath = new ArrayList<>();
+        expectedShortestPath.add(edgeAtoC);
+        expectedShortestPath.add(edgeCtoD);
+        expectedShortestPath.add(edgeDtoE);
+
+        assertEquals(expectedShortestPath, shortestPath.getEdges());
+
+        System.out.println("\nShortest Path when C to E = 9:");
         shortestPath.getEdges().forEach(System.out::println);
     }
 }

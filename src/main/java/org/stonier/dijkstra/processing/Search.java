@@ -5,10 +5,7 @@ import org.stonier.dijkstra.model.Graph;
 import org.stonier.dijkstra.model.Path;
 import org.stonier.dijkstra.model.Vertex;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class Search {
 
@@ -52,7 +49,7 @@ public class Search {
     private static VertexWrapper getUnvisitedVertexWithSmallestDistanceFromStart(SearchState searchState) {
 
         return searchState.getVerticesToVisit().values().stream()
-                .min((vw1, vw2) -> Long.compare(vw1.getShortestDistanceFromStart(), vw2.getShortestDistanceFromStart()))
+                .min(Comparator.comparingLong(VertexWrapper::getShortestDistanceFromStart))
                 .get();
     }
 
